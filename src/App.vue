@@ -11,6 +11,7 @@ import data from './libs/data.json'
 const MULTIPLE = 600000;
 const DEFAULT_CITY = '北京市';
 const DEFAULT_ZOOM = 16;
+const FRAME_DURATION = 500; // 一个节点的平均时长(ms)
 
 export default {
   name: 'App',
@@ -87,9 +88,16 @@ export default {
       // this.createPointLabel(map, pos);
 
       // mouseenter
-      marker.addEventListener('mouseover', function(){   
-          console.log('您点击了标注1');
+      let _label = null;
+      marker.addEventListener('mouseover', () => {   
+          this.createPointLabel(map, pos, '测试文本', (label) => {
+            _label = label;
+          })
       });
+
+      marker.addEventListener('mouseout', () => {
+        map.removeOverlay(_label);
+      })
     },
 
     drawLin(map) {
@@ -202,7 +210,7 @@ export default {
       window.points = points;
       window.res_arr = res_arr;
 
-      this.wgs84ToBD09(res_arr.slice(0, 10), (res) => {
+      this.WGS84ToBD09(res_arr.slice(0, 10), (res) => {
         console.log('res:', res);
         if(res.status === 0) {
           this.routeTrack(map, res.points)
@@ -210,7 +218,7 @@ export default {
       });
     },
 
-    wgs84ToBD09(path, callback = () => {}) {
+    WGS84ToBD09(path, callback = () => {}) {
       setTimeout(() => {
         const convertor = new BMapGL.Convertor();
         convertor.translate(path, COORDINATES_WGS84, COORDINATES_BD09, callback);
@@ -218,46 +226,47 @@ export default {
     },
 
     routeTrack(map, paths) {
+      const time = FRAME_DURATION * paths.length;
       const pl = new BMapGL.Polyline(paths);
       const trackAni = new BMapGLLib.TrackAnimation(map, pl, {
           overallView: true, // 动画完成后自动调整视野到总览
           tilt: 55,          // 轨迹播放的角度，默认为55
-          duration: 5000,   // 动画持续时长，默认为10000，单位ms
+          duration: time,   // 动画持续时长，默认为10000，单位ms
           delay: 0,        // 动画开始的延迟，默认0，单位ms
           zoom: DEFAULT_ZOOM, // 动画中缩放的级别
       });
-      // trackAni.setPolyline();
       trackAni.start();
 
-      setTimeout(() => {
-        paths.forEach(pt => {
-          this.addMarker(map, pt);
-        })
-      }, 5000);
+      for(let i = 0; i < paths.length; i++) {
+        setTimeout(() => { 
+          this.addMarker(map, paths[i]);
+        }, trackAni._pathPercents[i] * time);
+      }
     },
 
-    createPointLabel(map, pt) {
-      const label = new BMapGL.Label('', {
+    createPointLabel(map, pt, content, callback) {
+      let label = new BMapGL.Label(content, {
         position: pt,
-        offset: new BMapGL.Size(10, 20)
+        offset: new BMapGL.Size(5, 5)
       });
+
       map.addOverlay(label);
 
       label.setStyle({
           color: '#000',
-          fontSize: '30px',
-          border: '1px solid #1E90FF',
+          fontSize: '13px',
           opacity: '0.8',
-          position: 'absolute',
-          top: '0',
-          left: '0',
+          border: 'none',
       })
 
       label.setPosition(pt);
 
-      label.addEventListener("mouseover", function(){  
-        console.log("您点击了标注");  
-      });
+      callback(label);
+
+      // label.addEventListener('mouseout', () => {
+      //   map.removeOverlay(label);
+      //   label = null;
+      // });
     }
   }
 }
