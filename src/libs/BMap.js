@@ -5,7 +5,7 @@ const COORDINATES_BD09 = window.COORDINATES_BD09;
 const BMAP_STATUS_SUCCESS = window.BMAP_STATUS_SUCCESS;
 const BMAP_EARTH_MAP = window.BMAP_EARTH_MAP;
 
-const DEFAULT_CITY = '北京市';
+const DEFAULT_CITY = '全国';
 const DEFAULT_ZOOM = 16;
 const FRAME_DURATION = 500;  // 一个节点的平均时长(ms)
 const ENABLE_SCROLL_WHEEL_ZOOM = true;
@@ -264,6 +264,27 @@ export class BMap {
     this.map.addOverlay(polygon);
   }
 
+  walking(start, end) {
+    const { map } = this;
+    const walking = new BMapGL.WalkingRoute(map, {renderOptions:{map: map, autoViewport: true}});
+    walking.search(start, end);
+    return walking;
+  }
+
+  driving(start, end) {
+    const { map } = this;
+    const driving = new BMapGL.DrivingRoute(map, {renderOptions:{map: map, autoViewport: true}});
+    driving.search(start, end);
+    return driving;
+  } 
+
+  riding(start, end) {
+    const { map } = this;
+    const riding = new BMapGL.RidingRoute(map, {renderOptions:{map: map, autoViewport: true}});
+    riding.search(start, end);
+    return riding;
+  }
+
   walkLine() {
     const { map } = this;
     const walking = new BMapGL.WalkingRoute(map, {renderOptions:{map: map, autoViewport: true}});
@@ -304,20 +325,24 @@ export class BMap {
   addrToPoint(addr) {
     const { map } = this;
     const myGeo = new BMapGL.Geocoder();
-    myGeo.getPoint(addr, (point) => {
+    return new Promise((resolve) => {
+      myGeo.getPoint(addr, (point) => {
         if(point){
             map.centerAndZoom(point, 16);
             map.addOverlay(new BMapGL.Marker(point, {title: addr}))
+            resolve(point);
         }else{
             console.log('您选择的地址没有解析到结果！');
         }
-    }, DEFAULT_CITY);
+      }, DEFAULT_CITY);
+    })
   }
 
   pointToAddr(point) {
     const { map } = this;
     const geoc = new BMapGL.Geocoder();
-    geoc.getLocation(point, (rs) => {
+    return new Promise((resolve) => {
+      geoc.getLocation(point, (rs) => {
         const addComp = rs.addressComponents;
         const addr = [
                       addComp.province, 
@@ -330,7 +355,9 @@ export class BMap {
 
         map.centerAndZoom(point, DEFAULT_ZOOM);
         map.addOverlay(new BMapGL.Marker(point, {title: addr}))
-    });
+        resolve(addr);
+      });
+    })
   }
 
   // bind event for map instance
