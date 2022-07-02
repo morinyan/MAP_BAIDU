@@ -77,6 +77,10 @@ export class BMap {
 
     map.setHeading(0);
     map.setTilt(0);
+
+    this.addControl('scale');
+    this.addControl('zoom');
+    this.addControl('city');
   }
 
   renderTrack(points = []) {
@@ -175,10 +179,14 @@ export class BMap {
     this.map.addOverlay(label);
 
     label.setStyle({
-      color: '#000',
-      fontSize: '13px',
-      opacity: '0.8',
+      // color: '#409eff',
+      color: '#ffffff',
+      fontSize: '16px',
+      opacity: '1',
       border: 'none',
+      padding: '5px',
+      borderRadius: '4px',
+      background: 'rgba(0,0,0,0.5)',
     })
 
     label.setPosition(pt);
@@ -327,7 +335,7 @@ export class BMap {
 
   // bind event for map instance
   bindEvents() {
-    this.map.addEventListener('click', function(e) {
+    this.map.addEventListener('click', (e) => {
       this.addMarker(e.latlng);
     });
   }
