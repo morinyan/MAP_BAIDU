@@ -40,6 +40,8 @@ const getDisplay = target => {
 
   return _display;
 };
+let routePlan;
+let posMarker;
 
 export default {
   name: 'App',
@@ -70,6 +72,47 @@ export default {
 
       mapClient.map.clearOverlays();
       mapClient.renderTrack(points);
+    },
+
+
+    getPosition() {
+      mapClient.getCurrentPosition().then(pt => {
+        this.startPoint = pt;
+        if (posMarker) {
+          mapClient.map.removeOverlay(posMarker);
+        }
+        posMarker = mapClient.addMarker(pt);
+        mapClient.pointToAddr(pt).then(addr => {
+          this.startAddr = addr;
+        });
+      });
+    },
+
+    searchAddr() {
+      mapClient.addrToPoint(this.endAddr).then(pt => {
+        this.endPoint = pt;
+      })
+    },
+
+    walking() {
+      if (routePlan) {
+        routePlan.clearResults();
+      }
+      routePlan = mapClient.walking(this.startPoint, this.endPoint);
+    },
+
+    driving() {
+      if (routePlan) {
+        routePlan.clearResults();
+      }
+      routePlan = mapClient.driving(this.startPoint, this.endPoint);
+    },
+
+    riding() {
+      if (routePlan) {
+        routePlan.clearResults();
+      }
+      routePlan = mapClient.riding(this.startPoint, this.endPoint);
     }
   }
 }

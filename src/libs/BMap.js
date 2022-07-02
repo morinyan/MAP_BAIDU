@@ -178,6 +178,8 @@ export class BMap {
     marker.addEventListener('mouseout', () => {
       label && this.map.removeOverlay(label);
     })
+
+    return marker;
   }
 
   createPointLabel(pt, content) {
