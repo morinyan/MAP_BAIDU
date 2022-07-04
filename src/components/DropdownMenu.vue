@@ -1,12 +1,17 @@
 <template>
   <div class="flex flex-wrap items-center">
-    <el-dropdown trigger="click" split-button type="primary" @click="handleClick">
+    <el-dropdown
+      trigger="click"
+      split-button
+      type="primary"
+      @click="handleClick"
+    >
       {{ target }}
       <template #dropdown>
-        <el-dropdown-menu>
+        <el-dropdown-menu class="menu">
           <el-dropdown-item
             v-for="(item, index) in menus"
-            :key="item"
+            :key="index"
             @click="selectFn(item, index)"
           > {{ item }} </el-dropdown-item>
         </el-dropdown-menu>
@@ -57,5 +62,8 @@ export default {
   color: var(--el-color-primary);
   display: flex;
   align-items: center;
+}
+.menu {
+  max-height: 300px;
 }
 </style>
