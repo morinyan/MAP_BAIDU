@@ -8,7 +8,7 @@
         :select="select"
       />
 
-      <div class="input">
+      <!-- <div class="input">
         <el-input v-model="startAddr" placeholder="我的位置" disabled>
           <template #append>
             <el-button type="primary" @click="getPosition">定位</el-button>
@@ -30,7 +30,7 @@
           <el-button type="primary" @click="riding">骑行</el-button>
           <el-button type="primary" @click="driving">公交</el-button>
         </el-button-group>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

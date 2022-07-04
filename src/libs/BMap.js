@@ -40,7 +40,7 @@ const translateFn = pts => new Promise((resolve, reject) => {
     pts,
     COORDINATES_WGS84,
     COORDINATES_BD09,
-    (status, points) => {
+    ({status, points}) => {
       if (status === BMAP_STATUS_SUCCESS) {
         resolve(points);
       } else {
