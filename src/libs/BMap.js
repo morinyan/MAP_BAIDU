@@ -101,8 +101,14 @@ export class BMap {
       return console.error('gps data points error!');
     }
 
+    // stop trackAni
+    if (this.trackAni) {
+      this.trackAni.cancel();
+      this.trackAni = null;
+    }
+
     const list = await this.WGS84ToBD09(points.map(pt => getBMPoint(pt)))
-    this.trackPaths = list.flat(2);
+    this.trackPaths = list.flat(2).map((pt, index) => ({...pt, _origin: points[index]._origin}));
     // start
     this.startTrackAnimation();
   }
@@ -110,10 +116,10 @@ export class BMap {
   async startTrackAnimation() {
     // 创建轨迹动画
     this.createTrackAnimation();
-    // 创建marker
-    this.createTrackPointMarkerAni();
     // 启动
     this.trackAni.start();
+    // 创建marker
+    this.createTrackPointMarkerAni();
   }
 
   createTrackAnimation() {
@@ -133,7 +139,7 @@ export class BMap {
       overallView: true,      // 动画完成后自动调整视野到总览
       tilt: 30,               // 轨迹播放的角度，默认为55
       duration,               // 动画持续时长，默认为10000，单位ms
-      delay: 300,               // 动画开始的延迟，默认0，单位ms
+      delay: 0,               // 动画开始的延迟，默认0，单位ms
     });
 
     this.trackAniDurations = duration;
@@ -159,7 +165,13 @@ export class BMap {
     this.trackPathPointMarkers.push({ marker });
     
     marker.addEventListener('mouseover', () => {
-      const tpl = `${JSON.stringify(point)}`;
+      let tpl = `
+        lng: ${point.lng} <br/>
+        lat: ${point.lat} <br/>
+      `;
+      for(let key in point._origin) {
+        tpl += `${key}: ${point._origin[key]}<br/>`;
+      }
       label = this.createPointLabel(point, tpl);
     });
 

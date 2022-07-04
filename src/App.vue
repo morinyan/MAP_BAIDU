@@ -57,6 +57,7 @@ export default {
 
   mounted() {
     mapClient = new BMap({ el: 'mapBox' });
+    window.mapClient = mapClient;
     this.menus = [...new Set(data.map(({ carId }) => carId))];
   },
 
@@ -68,7 +69,6 @@ export default {
       const points = getDisplay(target).map(item => ({ lng: +item.lon/600000, lat: +item.lat/600000, _origin: item }));
 
       mapClient.map.clearOverlays();
-      mapClient.map.trackAni?.cancel();
       mapClient.renderTrack(points);
     }
   }
