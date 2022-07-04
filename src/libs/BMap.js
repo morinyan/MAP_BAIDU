@@ -34,6 +34,22 @@ const createContol = (type, opts) => {
   return new AdapterClass(opts);
 };
 
+const translateFn = pts => new Promise((resolve, reject) => {
+  const convertor = new BMapGL.Convertor();
+  convertor.translate(
+    pts,
+    COORDINATES_WGS84,
+    COORDINATES_BD09,
+    (status, points) => {
+      if (status === BMAP_STATUS_SUCCESS) {
+        resolve(points);
+      } else {
+        reject(status);
+      }
+    }
+  );
+});
+
 export class BMap {
   map = null;                 // map实例
   opts = {};                  // map配置
@@ -104,9 +120,10 @@ export class BMap {
       }
     })
 
-    this.trackPaths = paths;
-
-    this.startTrackAnimation();
+    this.WGS84ToBD09(paths).then(list => {
+      this.trackPaths = list.flat(2);
+      this.startTrackAnimation();
+    });
   }
 
   startTrackAnimation() {
@@ -195,16 +212,21 @@ export class BMap {
   }
 
   // WGS to BD09
-  WGS84ToBD09(path, callback = () => {}) {
-    setTimeout(() => {
-      const convertor = new BMapGL.Convertor();
-      convertor.translate(
-        path, 
-        COORDINATES_WGS84, 
-        COORDINATES_BD09, 
-        callback
-      );
-    }, 500)
+  WGS84ToBD09(paths) {
+    const promiseList = [];
+    const len = paths.length;
+    let index = 0;
+
+    while(index < Math.ceil(len / 10)) {
+      const start = index * 10;
+      const end = (index + 1) * 10 < len ? (index + 1) * 10 : len;
+
+      promiseList.push(translateFn(paths.slice(start, end)))
+
+      index++;
+    }
+
+    return Promise.all(promiseList);
   }
 
   // ==============================================
