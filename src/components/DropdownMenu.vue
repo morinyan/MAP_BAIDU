@@ -65,5 +65,6 @@ export default {
 }
 .menu {
   max-height: 300px;
+  overflow-y: scroll;
 }
 </style>
